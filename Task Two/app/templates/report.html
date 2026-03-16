@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Report Kudos{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="text-center mb-3">⚑ Report Inappropriate Kudos</h2>
+                <div class="alert alert-secondary">
+                    <strong>{{ kudos.sender.username }}</strong> → <strong>{{ kudos.receiver.username }}</strong><br>
+                    <em>{{ kudos.message }}</em>
+                </div>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.reason.label(class="form-label") }}
+                        {{ form.reason(class="form-control", rows="3", placeholder="Why is this inappropriate?") }}
+                        {% for error in form.reason.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {{ form.submit(class="btn btn-danger w-100") }}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

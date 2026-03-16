@@ -1,86 +1,54 @@
 {% extends "base.html" %}
 {% block title %}Admin - Moderation{% endblock %}
 {% block content %}
-<h2 class="mb-4">🛡️ Content Moderation Panel</h2>
-<p class="text-muted">Manage all kudos messages. Hidden kudos are not visible on the public feed.</p>
-
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Message</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for kudos in all_kudos.items %}
-            <tr class="{{ 'table-warning' if not kudos.is_visible }}">
-                <td>{{ kudos.id }}</td>
-                <td>{{ kudos.sender.username }}</td>
-                <td>{{ kudos.receiver.username }}</td>
-                <td>{{ kudos.message[:100] }}{{ '...' if kudos.message|length > 100 }}</td>
-                <td>{{ kudos.created_at.strftime('%b %d, %Y %H:%M') }}</td>
-                <td>
-                    {% if kudos.is_visible %}
-                    <span class="badge bg-success">Visible</span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark">Hidden</span>
-                    {% if kudos.moderator %}
-                    <br><small class="text-muted">by {{ kudos.moderator.username }}</small>
-                    {% endif %}
-                    {% if kudos.moderation_reason %}
-                    <br><small class="text-muted">Reason: {{ kudos.moderation_reason }}</small>
-                    {% endif %}
-                    {% endif %}
-                </td>
-                <td>
-                    <form method="POST" action="{{ url_for('admin.hide_kudos', kudos_id=kudos.id) }}" class="d-inline">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="text" name="reason" placeholder="Reason" class="form-control form-control-sm d-inline-block" style="width:120px">
-                        {% if kudos.is_visible %}
-                        <button type="submit" class="btn btn-warning btn-sm">Hide</button>
-                        {% else %}
-                        <button type="submit" class="btn btn-success btn-sm">Restore</button>
-                        {% endif %}
-                    </form>
-                    <form method="POST" action="{{ url_for('admin.delete_kudos', kudos_id=kudos.id) }}" class="d-inline" onsubmit="return confirm('Permanently delete this kudos?')">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h2 class="mb-3">🛡️ Content Moderation Panel</h2>
+<div class="row mb-3">
+    <div class="col-md-3"><div class="card text-center p-2"><h5>{{ stats.total }}</h5><small>Total Kudos</small></div></div>
+    <div class="col-md-3"><div class="card text-center p-2"><h5 class="text-success">{{ stats.visible }}</h5><small>Visible</small></div></div>
+    <div class="col-md-3"><div class="card text-center p-2"><h5 class="text-warning">{{ stats.hidden }}</h5><small>Hidden</small></div></div>
+    <div class="col-md-3"><div class="card text-center p-2"><h5 class="text-danger">{{ stats.pending_reports }}</h5><small>Pending Reports</small></div></div>
 </div>
-
-<!-- Pagination -->
+<div class="table-responsive">
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr><th>ID</th><th>From</th><th>To</th><th>Message</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for kudos in all_kudos.items %}
+    <tr class="{{ 'table-warning' if not kudos.is_visible }}">
+        <td>{{ kudos.id }}</td>
+        <td>{{ kudos.sender.username }}</td>
+        <td>{{ kudos.receiver.username }}</td>
+        <td>{{ kudos.message[:100] }}{{ '...' if kudos.message|length > 100 }}</td>
+        <td>{{ kudos.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+        <td>
+            {% if kudos.is_visible %}<span class="badge bg-success">Visible</span>
+            {% else %}<span class="badge bg-warning text-dark">Hidden</span>
+            {% if kudos.moderator %}<br><small>by {{ kudos.moderator.username }}</small>{% endif %}
+            {% if kudos.moderation_reason %}<br><small>{{ kudos.moderation_reason }}</small>{% endif %}
+            {% endif %}
+        </td>
+        <td>
+            <form method="POST" action="{{ url_for('admin.hide_kudos', kudos_id=kudos.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="reason" placeholder="Reason" class="form-control form-control-sm d-inline-block" style="width:100px">
+                <button class="btn btn-{{ 'success' if not kudos.is_visible else 'warning' }} btn-sm">{{ 'Restore' if not kudos.is_visible else 'Hide' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_kudos', kudos_id=kudos.id) }}" class="d-inline" onsubmit="return confirm('Permanently delete?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
 {% if all_kudos.pages > 1 %}
-<nav>
-    <ul class="pagination justify-content-center">
-        {% if all_kudos.has_prev %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('admin.moderation', page=all_kudos.prev_num) }}">Previous</a>
-        </li>
-        {% endif %}
-        {% for p in all_kudos.iter_pages() %}
-        {% if p %}
-        <li class="page-item {{ 'active' if p == all_kudos.page }}">
-            <a class="page-link" href="{{ url_for('admin.moderation', page=p) }}">{{ p }}</a>
-        </li>
-        {% endif %}
-        {% endfor %}
-        {% if all_kudos.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('admin.moderation', page=all_kudos.next_num) }}">Next</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
+<nav><ul class="pagination justify-content-center">
+    {% if all_kudos.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('admin.moderation', page=all_kudos.prev_num) }}">Previous</a></li>{% endif %}
+    {% for p in all_kudos.iter_pages() %}{% if p %}<li class="page-item {{ 'active' if p == all_kudos.page }}"><a class="page-link" href="{{ url_for('admin.moderation', page=p) }}">{{ p }}</a></li>{% endif %}{% endfor %}
+    {% if all_kudos.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('admin.moderation', page=all_kudos.next_num) }}">Next</a></li>{% endif %}
+</ul></nav>
 {% endif %}
 {% endblock %}

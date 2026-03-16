@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Admin - Reports{% endblock %}
+{% block content %}
+<h2 class="mb-4">📋 Reports Queue</h2>
+<div class="table-responsive">
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr><th>ID</th><th>Kudos</th><th>Reported By</th><th>Reason</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for r in reports.items %}
+    <tr>
+        <td>{{ r.id }}</td>
+        <td>{{ r.kudos.sender.username }} → {{ r.kudos.receiver.username }}: <em>{{ r.kudos.message[:80] }}</em></td>
+        <td>{{ r.reporter.username }}</td>
+        <td>{{ r.reason[:100] }}</td>
+        <td><span class="badge {{ 'bg-warning' if r.status=='pending' else 'bg-success' if r.status=='reviewed' else 'bg-secondary' }}">{{ r.status }}</span></td>
+        <td>{{ r.created_at.strftime('%b %d, %Y') }}</td>
+        <td>
+            {% if r.status == 'pending' %}
+            <form method="POST" action="{{ url_for('admin.resolve_report', report_id=r.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button name="action" value="hide" class="btn btn-warning btn-sm">Hide</button>
+                <button name="action" value="delete" class="btn btn-danger btn-sm">Delete</button>
+                <button name="action" value="dismiss" class="btn btn-secondary btn-sm">Dismiss</button>
+            </form>
+            {% else %}
+            {% if r.reviewer %}Reviewed by {{ r.reviewer.username }}{% endif %}
+            {% endif %}
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No reports.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

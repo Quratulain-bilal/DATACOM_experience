@@ -1,9 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <h2>🎉 Kudos Feed</h2>
     <a href="{{ url_for('main.give_kudos') }}" class="btn btn-success">+ Give Kudos</a>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Search by name..." value="{{ search }}">
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('main.dashboard', filter='week') }}" class="btn btn-sm {{ 'btn-primary' if date_filter=='week' else 'btn-outline-secondary' }}">Week</a>
+        <a href="{{ url_for('main.dashboard', filter='month') }}" class="btn btn-sm {{ 'btn-primary' if date_filter=='month' else 'btn-outline-secondary' }}">Month</a>
+        <a href="{{ url_for('main.dashboard', filter='year') }}" class="btn btn-sm {{ 'btn-primary' if date_filter=='year' else 'btn-outline-secondary' }}">Year</a>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-secondary">All</a>
+    </div>
 </div>
 
 {% if kudos_feed.items %}
@@ -13,42 +29,25 @@
         <div class="card kudos-card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
-                    <h6 class="card-subtitle text-primary">
-                        <strong>{{ kudos.sender.username }}</strong> → <strong>{{ kudos.receiver.username }}</strong>
+                    <h6 class="text-primary">
+                        <a href="{{ url_for('main.profile', user_id=kudos.sender.id) }}">{{ kudos.sender.username }}</a> →
+                        <a href="{{ url_for('main.profile', user_id=kudos.receiver.id) }}">{{ kudos.receiver.username }}</a>
                     </h6>
                     <small class="text-muted">{{ kudos.created_at.strftime('%b %d, %Y %H:%M') }}</small>
                 </div>
                 <p class="card-text mt-2">{{ kudos.message }}</p>
+                <a href="{{ url_for('main.report_kudos', kudos_id=kudos.id) }}" class="btn btn-outline-danger btn-sm">⚑ Report</a>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
-
 <!-- Pagination -->
-<nav class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if kudos_feed.has_prev %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.prev_num) }}">Previous</a>
-        </li>
-        {% endif %}
-        {% for p in kudos_feed.iter_pages() %}
-        {% if p %}
-        <li class="page-item {{ 'active' if p == kudos_feed.page }}">
-            <a class="page-link" href="{{ url_for('main.dashboard', page=p) }}">{{ p }}</a>
-        </li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">…</span></li>
-        {% endif %}
-        {% endfor %}
-        {% if kudos_feed.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.next_num) }}">Next</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
+<nav class="mt-4"><ul class="pagination justify-content-center">
+    {% if kudos_feed.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.prev_num, q=search, filter=date_filter) }}">Previous</a></li>{% endif %}
+    {% for p in kudos_feed.iter_pages() %}{% if p %}<li class="page-item {{ 'active' if p == kudos_feed.page }}"><a class="page-link" href="{{ url_for('main.dashboard', page=p, q=search, filter=date_filter) }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
+    {% if kudos_feed.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.next_num, q=search, filter=date_filter) }}">Next</a></li>{% endif %}
+</ul></nav>
 {% else %}
 <div class="text-center text-muted py-5">
     <h4>No kudos yet!</h4>

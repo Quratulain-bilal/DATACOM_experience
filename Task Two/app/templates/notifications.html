@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>🔔 Notifications</h2>
+    {% if notifications.items %}
+    <form method="POST" action="{{ url_for('main.mark_all_read') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-primary btn-sm">Mark all as read</button>
+    </form>
+    {% endif %}
+</div>
+{% if notifications.items %}
+{% for n in notifications.items %}
+<div class="card mb-2 {{ '' if n.is_read else 'border-primary' }}">
+    <div class="card-body py-2 d-flex justify-content-between align-items-center">
+        <div>
+            {% if n.type == 'kudos_received' %}
+            🎉 <strong>{{ n.kudos.sender.username }}</strong> gave you kudos!
+            {% else %}{{ n.type }}{% endif %}
+            <br><small class="text-muted">{{ n.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+        </div>
+        {% if not n.is_read %}
+        <form method="POST" action="{{ url_for('main.mark_read', notif_id=n.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-secondary">✓ Read</button>
+        </form>
+        {% else %}<span class="badge bg-secondary">Read</span>{% endif %}
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<p class="text-muted">No notifications yet.</p>
+{% endif %}
+{% endblock %}

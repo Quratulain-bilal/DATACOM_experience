@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My Kudos{% endblock %}
+{% block content %}
+<h2>📋 My Kudos</h2>
+<div class="mb-3">
+    <span class="badge bg-info fs-6">Received: {{ current_user.kudos_received_count }}</span>
+    <span class="badge bg-success fs-6">Sent: {{ current_user.kudos_sent_count }}</span>
+</div>
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link {{ 'active' if tab=='received' }}" href="{{ url_for('main.my_kudos', tab='received') }}">Received</a></li>
+    <li class="nav-item"><a class="nav-link {{ 'active' if tab=='sent' }}" href="{{ url_for('main.my_kudos', tab='sent') }}">Sent</a></li>
+</ul>
+{% if kudos_list.items %}
+{% for kudos in kudos_list.items %}
+<div class="card mb-2">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <strong>{% if tab == 'received' %}From: {{ kudos.sender.username }}{% else %}To: {{ kudos.receiver.username }}{% endif %}</strong>
+            <small class="text-muted">{{ kudos.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+        </div>
+        <p class="mb-0 mt-1">{{ kudos.message }}</p>
+    </div>
+</div>
+{% endfor %}
+<nav class="mt-3"><ul class="pagination justify-content-center">
+    {% if kudos_list.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('main.my_kudos', tab=tab, page=kudos_list.prev_num) }}">Previous</a></li>{% endif %}
+    {% for p in kudos_list.iter_pages() %}{% if p %}<li class="page-item {{ 'active' if p == kudos_list.page }}"><a class="page-link" href="{{ url_for('main.my_kudos', tab=tab, page=p) }}">{{ p }}</a></li>{% endif %}{% endfor %}
+    {% if kudos_list.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('main.my_kudos', tab=tab, page=kudos_list.next_num) }}">Next</a></li>{% endif %}
+</ul></nav>
+{% else %}
+<p class="text-muted">No kudos {{ tab }} yet.</p>
+{% endif %}
+{% endblock %}

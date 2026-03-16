@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h2>👤 {{ profile_user.username }}</h2>
+        <p class="text-muted">{{ profile_user.email }} · {{ profile_user.department }} · Joined {{ profile_user.join_date.strftime('%b %Y') if profile_user.join_date else 'N/A' }}</p>
+        <span class="badge bg-info fs-6">Received: {{ profile_user.kudos_received_count }}</span>
+        <span class="badge bg-success fs-6">Sent: {{ profile_user.kudos_sent_count }}</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <h5>Recent Kudos Received</h5>
+        {% for k in recent_received %}
+        <div class="card mb-2"><div class="card-body py-2">
+            <small class="text-muted">From {{ k.sender.username }} · {{ k.created_at.strftime('%b %d') }}</small>
+            <p class="mb-0">{{ k.message[:150] }}</p>
+        </div></div>
+        {% else %}<p class="text-muted">None yet.</p>{% endfor %}
+    </div>
+    <div class="col-md-6">
+        <h5>Recent Kudos Sent</h5>
+        {% for k in recent_sent %}
+        <div class="card mb-2"><div class="card-body py-2">
+            <small class="text-muted">To {{ k.receiver.username }} · {{ k.created_at.strftime('%b %d') }}</small>
+            <p class="mb-0">{{ k.message[:150] }}</p>
+        </div></div>
+        {% else %}<p class="text-muted">None yet.</p>{% endfor %}
+    </div>
+</div>
+{% endblock %}
