@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🎉 Kudos Feed</h2>
+    <a href="{{ url_for('main.give_kudos') }}" class="btn btn-success">+ Give Kudos</a>
+</div>
+
+{% if kudos_feed.items %}
+<div class="row">
+    {% for kudos in kudos_feed.items %}
+    <div class="col-md-6 mb-3">
+        <div class="card kudos-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h6 class="card-subtitle text-primary">
+                        <strong>{{ kudos.sender.username }}</strong> → <strong>{{ kudos.receiver.username }}</strong>
+                    </h6>
+                    <small class="text-muted">{{ kudos.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                </div>
+                <p class="card-text mt-2">{{ kudos.message }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if kudos_feed.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.prev_num) }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for p in kudos_feed.iter_pages() %}
+        {% if p %}
+        <li class="page-item {{ 'active' if p == kudos_feed.page }}">
+            <a class="page-link" href="{{ url_for('main.dashboard', page=p) }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        {% if kudos_feed.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('main.dashboard', page=kudos_feed.next_num) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% else %}
+<div class="text-center text-muted py-5">
+    <h4>No kudos yet!</h4>
+    <p>Be the first to appreciate a colleague.</p>
+    <a href="{{ url_for('main.give_kudos') }}" class="btn btn-primary">Give Kudos</a>
+</div>
+{% endif %}
+{% endblock %}

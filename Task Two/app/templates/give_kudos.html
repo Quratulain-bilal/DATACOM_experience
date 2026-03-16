@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Give Kudos{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">🎉 Give Kudos</h2>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.receiver_id.label(class="form-label") }}
+                        {{ form.receiver_id(class="form-select") }}
+                        {% for error in form.receiver_id.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.message.label(class="form-label") }}
+                        {{ form.message(class="form-control", rows="4", placeholder="Write something nice...", id="kudos-message", maxlength="500") }}
+                        <div class="form-text text-end">
+                            <span id="char-count">0</span> / 500 characters
+                        </div>
+                        {% for error in form.message.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {{ form.submit(class="btn btn-success w-100 btn-lg") }}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const textarea = document.getElementById('kudos-message');
+    const counter = document.getElementById('char-count');
+    textarea.addEventListener('input', function() {
+        counter.textContent = this.value.length;
+        if (this.value.length > 450) {
+            counter.style.color = '#dc3545';
+        } else {
+            counter.style.color = '';
+        }
+    });
+</script>
+{% endblock %}
